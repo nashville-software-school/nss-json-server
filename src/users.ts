@@ -2,19 +2,19 @@ import * as bcrypt from 'bcryptjs'
 import { RequestHandler, Router } from 'express'
 import * as jwt from 'jsonwebtoken'
 import {
-	EMAIL_REGEX,
-	JWT_EXPIRES_IN,
-	JWT_SECRET_KEY,
-	MIN_PASSWORD_LENGTH,
-	SALT_LENGTH,
+    EMAIL_REGEX,
+    JWT_EXPIRES_IN,
+    JWT_SECRET_KEY,
+    MIN_PASSWORD_LENGTH,
+    SALT_LENGTH,
 } from './constants'
 import { bodyParsingHandler, errorHandler } from './shared-middlewares'
 
 interface User {
-	id: string
-	email: string
-	password: string
-	[key: string]: any // Allow any other field
+    id: string
+    email: string
+    password: string
+    [key: string]: any // Allow any other field
 }
 
 type ValidateHandler = ({ required: required }: { required: boolean }) => RequestHandler
@@ -23,124 +23,138 @@ type ValidateHandler = ({ required: required }: { required: boolean }) => Reques
  * Validate email and password
  */
 const validate: ValidateHandler = ({ required }) => (req, res, next) => {
-	const { email, password } = req.body as Partial<User>
+    const { email, password } = req.body as Partial<User>
 
-	if (required && (!email || !email.trim() || !password || !password.trim())) {
-		res.status(400).jsonp('Email and password are required')
-		return
-	}
+    if (required && (!email || !email.trim() || !password || !password.trim())) {
+        res.status(400).jsonp('Email and password are required')
+        return
+    }
 
-	if (email && !email.match(EMAIL_REGEX)) {
-		res.status(400).jsonp('Email format is invalid')
-		return
-	}
+    if (email && !email.match(EMAIL_REGEX)) {
+        res.status(400).jsonp('Email format is invalid')
+        return
+    }
 
-	if (password && password.length < MIN_PASSWORD_LENGTH) {
-		res.status(400).jsonp('Password is too short')
-		return
-	}
+    if (password && password.length < MIN_PASSWORD_LENGTH) {
+        res.status(400).jsonp('Password is too short')
+        return
+    }
 
-	next()
+    next()
 }
 
 /**
  * Register / Create a user
  */
 const create: RequestHandler = (req, res, next) => {
-	const { email, password, ...rest } = req.body as User
-	const { db } = req.app
+    const { email, password, ...rest } = req.body as User
+    const { db } = req.app
+    let createdUser
 
-	if (db == null) {
-		// json-server CLI expose the router db to the app
-		// (https://github.com/typicode/json-server/blob/master/src/cli/run.js#L74),
-		// but if we use the json-server module API, we must do the same.
-		throw Error('You must bind the router db to the app')
-	}
+    if (db == null) {
+        // json-server CLI expose the router db to the app
+        // (https://github.com/typicode/json-server/blob/master/src/cli/run.js#L74),
+        // but if we use the json-server module API, we must do the same.
+        throw Error('You must bind the router db to the app')
+    }
 
-	// prettier-ignore
-	const existingUser = db.get('users').find({ email }).value()
-	if (existingUser) {
-		res.status(400).jsonp('Email already exists')
-		return
-	}
+    // prettier-ignore
+    const existingUser = db.get('users').find({ email }).value()
+    if (existingUser) {
+        res.status(400).jsonp('Email already exists')
+        return
+    }
 
-	bcrypt
-		.hash(password, SALT_LENGTH)
-		.then((hash) => {
-			// Create users collection if doesn't exist,
-			// save password as hash and add any other field without validation
-			try {
-				return db
-					.get('users')
-					.insert({ email, password: hash, ...rest })
-					.write()
-			} catch (error) {
-				throw Error('You must add a "users" collection to your db')
-			}
-		})
-		.then((user: User) => {
-			return new Promise<string>((resolve, reject) => {
-				jwt.sign(
-					{ email },
-					JWT_SECRET_KEY,
-					{ expiresIn: JWT_EXPIRES_IN, subject: String(user.id) },
-					(error, idToken) => {
-						if (error) reject(error)
-						else resolve(idToken)
-					}
-				)
-			})
-		})
-		.then((accessToken) => {
-			// Return an access token instead of the user record
-			res.status(201).jsonp({ accessToken })
-		})
-		.catch(next)
+    bcrypt
+        .hash(password, SALT_LENGTH)
+        .then((hash) => {
+            // Create users collection if doesn't exist,
+            // save password as hash and add any other field without validation
+            try {
+                return db
+                    .get('users')
+                    .insert({ email, password: hash, ...rest })
+                    .write()
+            } catch (error) {
+                throw Error('You must add a "users" collection to your db')
+            }
+        })
+        .then((user: User) => {
+            createdUser = user
+            return new Promise<string>((resolve, reject) => {
+                jwt.sign(
+                    { email },
+                    JWT_SECRET_KEY,
+                    { expiresIn: JWT_EXPIRES_IN, subject: String(user.id) },
+                    (error, idToken) => {
+                        if (error) reject(error)
+                        else resolve(idToken)
+                    }
+                )
+            })
+        })
+        .then((accessToken) => {
+            // Return an access token instead of the user record
+            res.status(201).jsonp({
+                accessToken,
+                user: {
+                    id: createdUser.id,
+                    username: createdUser.username || ""
+                }
+            })
+        })
+        .catch(next)
 }
 
 /**
  * Login
  */
 const login: RequestHandler = (req, res, next) => {
-	const { email, password } = req.body as User
-	const { db } = req.app
+    const { email, password } = req.body as User
+    const { db } = req.app
 
-	if (db == null) {
-		throw Error('You must bind the router db to the app')
-	}
+    if (db == null) {
+        throw Error('You must bind the router db to the app')
+    }
 
-	// prettier-ignore
-	const user = db.get('users').find({ email }).value() as User
+    // prettier-ignore
+    const user = db.get('users').find({ email }).value() as User
 
-	if (!user) {
-		res.status(400).jsonp('Cannot find user')
-		return
-	}
+    if (!user) {
+        res.status(400).jsonp('Cannot find user')
+        return
+    }
 
-	bcrypt
-		.compare(password, user.password)
-		.then((same) => {
-			if (!same) throw 400
+    bcrypt
+        .compare(password, user.password)
+        .then((same) => {
+            if (!same) throw 400
 
-			return new Promise<string>((resolve, reject) => {
-				jwt.sign(
-					{ email },
-					JWT_SECRET_KEY,
-					{ expiresIn: JWT_EXPIRES_IN, subject: String(user.id) },
-					(error, idToken) => {
-						if (error) reject(error)
-						else resolve(idToken)
-					}
-				)
-			})
-		})
-		.then((accessToken: string) => {
-			res.status(200).jsonp({ accessToken })
-		})
-		.catch((err) => {
-			if (err === 400) res.status(400).jsonp('Incorrect password')
-			else next(err)
-		})
+            return new Promise<string>((resolve, reject) => {
+                jwt.sign(
+                    { email },
+                    JWT_SECRET_KEY,
+                    { expiresIn: JWT_EXPIRES_IN, subject: String(user.id) },
+                    (error, idToken) => {
+                        if (error) reject(error)
+                        else resolve(idToken)
+                    }
+                )
+            })
+        })
+        .then((accessToken: string) => {
+            res.status(200).jsonp({
+                accessToken,
+                user: {
+                    id: user.id,
+                    username: user.username || ""
+                }
+            })
+        })
+        .catch((err) => {
+            if (err === 400) res.status(400).jsonp('Incorrect password')
+            else next(err)
+        })
 }
 
 /**
@@ -148,29 +162,29 @@ const login: RequestHandler = (req, res, next) => {
  */
 // TODO: create new access token when password or email changes
 const update: RequestHandler = (req, res, next) => {
-	const { password } = req.body as Partial<User>
+    const { password } = req.body as Partial<User>
 
-	if (!password) {
-		next() // Simply continue with json-server router
-		return
-	}
+    if (!password) {
+        next() // Simply continue with json-server router
+        return
+    }
 
-	bcrypt
-		.hash(password, SALT_LENGTH)
-		.then((hash) => {
-			req.body.password = hash
-			next()
-		})
-		.catch(next)
+    bcrypt
+        .hash(password, SALT_LENGTH)
+        .then((hash) => {
+            req.body.password = hash
+            next()
+        })
+        .catch(next)
 }
 
 /**
  * Users router
  */
 export default Router()
-	.use(bodyParsingHandler)
-	.post('/users|register|signup', validate({ required: true }), create)
-	.post('/login|signin', validate({ required: true }), login)
-	.put('/users/:id', validate({ required: true }), update)
-	.patch('/users/:id', validate({ required: false }), update)
-	.use(errorHandler)
+    .use(bodyParsingHandler)
+    .post('/users|register|signup', validate({ required: true }), create)
+    .post('/login|signin', validate({ required: true }), login)
+    .put('/users/:id', validate({ required: true }), update)
+    .patch('/users/:id', validate({ required: false }), update)
+    .use(errorHandler)

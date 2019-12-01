@@ -27,7 +27,7 @@ Create a `db.json` file with a `users` collection :
 Run with following command:
 
 ```bash
-nss-json-server db.json
+nss-json-server -w db.json -p 8088 -X 7h
 ```
 
 _It exposes and works the same for all [JSON Server flags](https://github.com/typicode/json-server#cli-usage)._
@@ -50,12 +50,16 @@ POST /register
 }
 ```
 
-The response contains the JWT access token:
+The response contains the JWT access token, user id and username (if exists):
 
 ```http
 201 Created
 {
-  "accessToken": "xxx.xxx.xxx"
+  "accessToken": "xxx.xxx.xxx",
+  "user": {
+    "id": 1,
+    "username": "xxxxxxxx"
+  }
 }
 ```
 
@@ -91,6 +95,10 @@ The response contains the JWT access token:
 ```http
 200 OK
 {
-  "accessToken": "xxx.xxx.xxx"
+  "accessToken": "xxx.xxx.xxx",
+  "user": {
+    "id": 1,
+    "username": "xxxxxxxx"
+  }
 }
 ```
