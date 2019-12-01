@@ -8,6 +8,8 @@ Mixins:
 
 ## Getting started
 
+### Package Install
+
 ```bash
 # NPM
 npm i -g nss-json-server
@@ -24,10 +26,20 @@ Create a `db.json` file with a `users` collection :
 }
 ```
 
+### Alias Setup
+
+Open your bash or zsh initialization file and add the following alias.
+
+```sh
+alias js="nss-json-server -X 7h -p 5050 -w"
+```
+
+### Running your API
+
 Run with following command:
 
 ```bash
-nss-json-server -w db.json -p 8088 -X 7h
+js db.json
 ```
 
 _It exposes and works the same for all [JSON Server flags](https://github.com/typicode/json-server#cli-usage)._
@@ -45,7 +57,7 @@ JSON Server Auth adds a simple [JWT based](https://jwt.io/) authentication flow.
 ```http
 POST /register
 {
-  "email": "olivier@mail.com",
+  "email": "admina@gmail.com",
   "password": "bestPassw0rd"
 }
 ```
@@ -68,10 +80,11 @@ Any other property can be added to the request body without being validated:
 ```http
 POST /register
 {
-  "email": "olivier@mail.com",
+  "email": "admina@gmail.com",
   "password": "bestPassw0rd",
-  "firstname": "Olivier",
-  "lastname": "Monge",
+  "username": "admina",
+  "firstname": "Admina",
+  "lastname": "Straytor",
   "age": 32
 }
 ```
@@ -85,7 +98,7 @@ POST /register
 ```http
 POST /login
 {
-  "email": "olivier@mail.com",
+  "email": "admina@gmail.com",
   "password": "bestPassw0rd"
 }
 ```
