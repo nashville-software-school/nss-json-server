@@ -30,10 +30,9 @@ const loggedOnly: RequestHandler = (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verify(token, JWT_SECRET_KEY)
-        // Add claims to request
+        jwt.verify(token, JWT_SECRET_KEY)
         req.claims = jwt.decode(token) as any
-        req.body.userId = parseInt(decoded['sub'], 10)
+        req.body.userId = parseInt(req.claims!.sub, 10)
         next()
     } catch (err) {
         res.status(401).jsonp((err as jwt.JsonWebTokenError).message)
@@ -48,6 +47,13 @@ const loggedOnly: RequestHandler = (req, res, next) => {
 const privateOnly: RequestHandler = (req, res, next) => {
     loggedOnly(req, res, () => {
         const { db } = req.app
+        const { authorization } = req.headers
+
+        if (!authorization) {
+            res.status(401).jsonp('Missing authorization header')
+            return
+        }
+
         if (db == null) {
             throw Error('You must bind the router db to the app')
         }
@@ -55,16 +61,23 @@ const privateOnly: RequestHandler = (req, res, next) => {
         // TODO: handle query params instead of removing them
         const path = req.url.replace(`?${stringify(req.query)}`, '')
         const [, mod, resource, id] = path.split('/')
+        const [scheme, token] = authorization.split(' ')
 
         // Creation and replacement
         // check userId on the request body
         if (req.method === 'POST' || req.method === 'PUT') {
             // TODO: use foreignKeySuffix instead of assuming the default "Id"
-            const hasRightUserId = String(req.body.userId) === req.claims!.sub
-            // No userId reference when creating a new user (duh)
             const isUserResource = resource === 'users'
 
-            if (hasRightUserId || isUserResource) {
+            if (!isUserResource) {
+                try {
+                    req.body.userId = parseInt(req.claims!.sub, 10)
+                } catch (err) {
+                    res.status(401).jsonp((err as jwt.JsonWebTokenError).message)
+                }
+            }
+
+            if ("userId" in req.body || isUserResource) {
                 next()
             } else {
                 res.status(403).jsonp(
