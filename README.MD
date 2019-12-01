@@ -115,3 +115,67 @@ The response contains the JWT access token:
   }
 }
 ```
+
+## Creating Owned Resources
+
+If any resource has been guarded with an ownership level route:
+
+| Permission | Description |
+| -- | -- |
+| 600 | User must own the resource to write or read the resource. |
+| 640 | User must own the resource to write the resource. User must be logged to read the resource. |
+| 644 | User must own the resource to write the resource. Everyone can read the resource. |
+
+
+Then when you make a request with the POST or PUT method, and there is an authorization header, then the `userId` will be automatically added to the request body.
+
+#### Example
+
+```js
+fetch("http://localhost:5050/posts", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: "Bearer xxxxxx.xx.xxxxx"
+    },
+    body: JSON.stringify({
+        url: "https://media.giphy.com/media/eHWWKfSp0VZ1V87Ixj/giphy.gif",
+        image: null,
+        timestamp: Date.now()
+    })
+})
+```
+
+Example response:
+
+```json
+{
+  "url": "https://media.giphy.com/media/eHWWKfSp0VZ1V87Ixj/giphy.gif",
+  "image": null,
+  "timestamp": 1575211182251,
+  "userId": 4,
+  "id": 8
+}
+```
+
+## For Local Development
+
+### Sample routes.json
+
+```json
+{
+    "/users*": "/640/users$1",
+    "/posts*": "/640/posts$1",
+    "/messages*": "/644/messages$1",
+    "/userFavoritePeople*": "/600/userFavoritePeople$1",
+    "/userFavoritePosts*": "/600/userFavoritePosts$1"
+}
+```
+
+### Starting the Dev Server
+
+1. Clone repo
+1. `npm i`
+1. `npm run build`
+1. `node dist/bin.js -w db.json -p 5050 -X 7h -r routes.json`

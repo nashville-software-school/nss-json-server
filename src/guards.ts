@@ -32,7 +32,6 @@ const loggedOnly: RequestHandler = (req, res, next) => {
     try {
         jwt.verify(token, JWT_SECRET_KEY)
         req.claims = jwt.decode(token) as any
-        req.body.userId = parseInt(req.claims!.sub, 10)
         next()
     } catch (err) {
         res.status(401).jsonp((err as jwt.JsonWebTokenError).message)
