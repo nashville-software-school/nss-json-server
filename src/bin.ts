@@ -51,7 +51,7 @@ const argv = yargs
     .example('$0 file.js', '')
     .example('$0 http://example.com/db.json', '')
     .epilog(
-        'https://github.com/typicode/json-server\nhttps://github.com/jeremyben/json-server-auth'
+        'https://github.com/typicode/json-server\nhttps://github.com/jeremyben/json-server-auth\nhttps://github.com/nashville-software-school/nss-json-server'
     )
     .require(1, 'Missing <source> argument').argv
 

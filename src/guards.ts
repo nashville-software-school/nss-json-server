@@ -60,7 +60,6 @@ const privateOnly: RequestHandler = (req, res, next) => {
         // TODO: handle query params instead of removing them
         const path = req.url.replace(`?${stringify(req.query)}`, '')
         const [, mod, resource, id] = path.split('/')
-        const [scheme, token] = authorization.split(' ')
 
         // Creation and replacement
         // check userId on the request body
@@ -95,10 +94,9 @@ const privateOnly: RequestHandler = (req, res, next) => {
             if (id) {
                 // prettier-ignore
                 const entity = db.get(resource).getById(id).value() as any
-                // get id if we are in the users collection
-                const userId = resource === 'users' ? entity.id : entity.userId
-
-                hasRightUserId = String(userId) === req.claims!.sub
+                // get id if we are in the users collection | userId if not
+                const comparer = (resource === "users") ? String(entity.id) : String(entity.userId)
+                hasRightUserId = comparer === req.claims!.sub
             } else {
                 const entities = db.get(resource).value() as any[]
 
@@ -166,7 +164,6 @@ const flattenUrl: RequestHandler = (req, res, next) => {
     // so we use app.all() that leaves the baseUrl with req.url,
     // so we can rewrite it.
     // https://stackoverflow.com/questions/14125997/
-
     req.url = req.url.replace(/\/[640]{3}/, '')
     next()
 }

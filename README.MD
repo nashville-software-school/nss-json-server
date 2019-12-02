@@ -161,21 +161,54 @@ Example response:
 
 ## For Local Development
 
+1. Clone repo
+1. `npm i`
+1. Create a `routes.json` and `db.json`
+1. Add the following to your `routes.json`
+
 ### Sample routes.json
 
 ```json
 {
     "/users*": "/640/users$1",
-    "/posts*": "/640/posts$1",
-    "/messages*": "/644/messages$1",
-    "/userFavoritePeople*": "/600/userFavoritePeople$1",
-    "/userFavoritePosts*": "/600/userFavoritePosts$1"
+    "/posts*": "/640/posts$1"
 }
 ```
 
 ### Starting the Dev Server
 
-1. Clone repo
-1. `npm i`
+
 1. `npm run build`
 1. `node dist/bin.js -w db.json -p 5050 -X 7h -r routes.json`
+
+### Basic Requests
+
+Using Postman, or your favorite HTTP request client, create the following requests.
+
+* http://localhost:5050/register
+    ```js
+    // Body (raw JSON)
+    {
+        "email": "admina@gmail.com",
+        "password": "Admin8*",
+        "name": "Admina Straytor",
+        "username": "admin",
+        "location": "Nashville, TN",
+        "avatar": ""
+    }
+    ```
+    * **Method** - `POST`
+    * **Content-Type** header - `application/json`
+* http://localhost:5050/posts
+    ```js
+    // Body (raw JSON)
+    {
+        "url": "https://media.giphy.com/media/eHWWKfSp0VZ1V87Ixj/giphy.gif",
+        "image": null,
+        "timestamp": 1575211182251
+    }
+    ```
+    * **Method** - `POST`
+    * **Authorization** header - Use token from registration response
+    * **Content-Type** header - `application/json`
+    * **Accept** header - `application/json`

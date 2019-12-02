@@ -183,8 +183,8 @@ const update: RequestHandler = (req, res, next) => {
  */
 export default Router()
     .use(bodyParsingHandler)
-    .post('/users|register|signup', validate({ required: true }), create)
-    .post('/login|signin', validate({ required: true }), login)
+    .post('/users|register', validate({ required: true }), create)
+    .post('/login', validate({ required: true }), login)
     .put('/users/:id', validate({ required: true }), update)
     .patch('/users/:id', validate({ required: false }), update)
     .use(errorHandler)

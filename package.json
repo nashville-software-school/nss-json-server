@@ -1,7 +1,7 @@
 {
     "name": "nss-json-server",
     "description": "JSON Server with other useful mixins",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "author": "Nashville Software School",
     "repository": "github:nashville-software-school/nss-json-server",
     "license": "MIT",
