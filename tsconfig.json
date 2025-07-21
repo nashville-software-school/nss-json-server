@@ -3,7 +3,10 @@
 		/* Basic Options */
 		"target": "es2017",
 		"module": "commonjs",
-		"lib": ["es2017"],
+		"lib": [
+			"es2017",
+			"dom"
+		],
 		// "allowJs": true,
 		// "checkJs": true,
 		// "jsx": "preserve",
@@ -19,7 +22,6 @@
 		// "importHelpers": true,
 		// "downlevelIteration": true,
 		// "isolatedModules": true,
-
 		/* Strict Type-Checking Options */
 		"strict": true,
 		"noImplicitAny": false,
@@ -28,13 +30,11 @@
 		// "strictPropertyInitialization": true,
 		// "noImplicitThis": true,
 		// "alwaysStrict": true,
-
 		/* Additional Checks */
 		// "noUnusedLocals": true,
 		// "noUnusedParameters": true,
 		// "noImplicitReturns": true,
 		// "noFallthroughCasesInSwitch": true,
-
 		/* Module Resolution Options */
 		"moduleResolution": "node",
 		// "baseUrl": "./",
@@ -46,17 +46,14 @@
 		// "esModuleInterop": true,
 		// "preserveSymlinks": true,
 		"resolveJsonModule": true,
-
 		/* Source Map Options */
 		// "sourceRoot": "",
 		// "mapRoot": "",
 		// "inlineSourceMap": true,
 		// "inlineSources": true,
-
 		/* Experimental Options */
 		// "experimentalDecorators": true,
 		// "emitDecoratorMetadata": true,
-
 		/* Compiler Plugins */
 		"plugins": [
 			{
@@ -66,5 +63,7 @@
 			}
 		]
 	},
-	"include": ["src/**/*.ts"]
+	"include": [
+		"src/**/*.ts"
+	]
 }

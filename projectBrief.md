@@ -5,7 +5,6 @@ This package will pull in useful mixins created by us and other developers. Docu
 Mixins:
 
 * JWT authentication middleware for **[JSON Server](https://github.com/typicode/json-server)** published by Jeremy Bensimon at **[Json Server with Auth](https://github.com/jeremyben/json-server-auth)**
-* Nested resource expansion for multiple levels of related resources
 
 ## Getting started
 
@@ -121,11 +120,11 @@ The response contains the JWT access token:
 
 If any resource has been guarded with an ownership level route:
 
-| Permission | Description                                                                                 |
-| ---------- | ------------------------------------------------------------------------------------------- |
-| 600        | User must own the resource to write or read the resource.                                   |
-| 640        | User must own the resource to write the resource. User must be logged to read the resource. |
-| 644        | User must own the resource to write the resource. Everyone can read the resource.           |
+| Permission | Description |
+| -- | -- |
+| 600 | User must own the resource to write or read the resource. |
+| 640 | User must own the resource to write the resource. User must be logged to read the resource. |
+| 644 | User must own the resource to write the resource. Everyone can read the resource. |
 
 
 Then when you make a request with the POST or PUT method, and there is an authorization header, then the `userId` will be automatically added to the request body.
@@ -159,60 +158,6 @@ Example response:
   "id": 8
 }
 ```
-
-## Nested Resource Expansion 🔄
-
-NSS JSON Server enhances JSON Server's `_expand` parameter to support multiple levels of resource embedding.
-
-### Basic Usage
-
-The standard JSON Server `_expand` parameter allows you to embed a related resource based on a foreign key:
-
-```
-GET /people/1?_expand=city
-```
-
-Response:
-```json
-{
-  "id": 1,
-  "name": "John Smith",
-  "cityId": 4,
-  "city": {
-    "id": 4,
-    "name": "Pittsburgh",
-    "stateId": 22
-  }
-}
-```
-
-### Nested Expansion
-
-With the nested expansion enhancement, you can now expand multiple levels deep using dot notation:
-
-```
-GET /people/1?_expand=city.state
-```
-
-Response:
-```json
-{
-  "id": 1,
-  "name": "John Smith",
-  "cityId": 4,
-  "city": {
-    "id": 4,
-    "name": "Pittsburgh",
-    "stateId": 22,
-    "state": {
-      "id": 22,
-      "name": "Pennsylvania"
-    }
-  }
-}
-```
-
-For more details and advanced usage, see the [Nested Expansion Documentation](docs/nested-expansion.md).
 
 ## For Local Development
 
