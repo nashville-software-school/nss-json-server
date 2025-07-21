@@ -2,6 +2,12 @@
 
 This feature enhances JSON Server's `_expand` parameter to support multiple levels of resource embedding.
 
+## Implementation Details
+
+The nested expansion middleware works in two phases:
+1. **Request Phase**: It modifies the request before json-server processes it, extracting the nested parts of the expansion parameters.
+2. **Response Phase**: After json-server has processed the request and expanded the primary resources, our middleware processes the response to expand the nested resources.
+
 ## Basic Usage
 
 The standard JSON Server `_expand` parameter allows you to embed a related resource based on a foreign key:
